@@ -1,0 +1,35 @@
+# Cyber Genie WhatsApp Bot
+
+A WhatsApp chatbot that responds to messages starting with `Cyber Genie, ...` using **OpenAI GPT**.  
+Built with **Flask** and **BestCRM API**. No frontend required.
+
+---
+
+## Project Structure
+
+whatsapp_cyber_genie/
+├─ app.py # Flask app
+├─ requirements.txt # Python dependencies
+├─ .env # API keys & tokens
+└─ README.md # This file
+
+
+---
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+
+Set environment variables in .env:
+OPENAI_API_KEY=your_openai_api_key
+BESTCRM_ACCESS_TOKEN=your_bestcrm_access_token
+PHONE_NUMBER_ID=your_whatsapp_phone_number_id
+
+Run the app:
+python app.py
+
+Configure your BestCRM webhook to point to:
+http://<your-server>/webhook
