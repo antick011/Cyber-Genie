@@ -66,7 +66,9 @@ def webhook():
         print("Webhook Error:", e)
 
     return jsonify(status="success"), 200
-
+@app.route("/", methods=["GET"])
+def index():
+    return "Cyber Genie bot is running!", 200
 # ✅ Use this for Railway production
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
