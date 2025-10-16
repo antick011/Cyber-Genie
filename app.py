@@ -79,8 +79,6 @@ def webhook():
         if message_text.lower().startswith("cyber genie,"):
             user_prompt = message_text[len("Cyber Genie,"):].strip()
             reply = get_openai_response(user_prompt)
-        else:
-            reply = "Please start your message with 'Cyber Genie,' to get a response."
 
         send_whatsapp_message(phone_number, reply)
     except Exception as e:
@@ -98,3 +96,4 @@ def health():
 # if __name__ == "__main__":
 #     port = int(os.environ.get("PORT", 8080))
 #     app.run(host="0.0.0.0", port=port)
+
