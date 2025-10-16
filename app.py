@@ -67,13 +67,14 @@ def webhook():
 
     return jsonify(status="success"), 200
     
-@app.route("/", methods=["GET"])
-def index():
-    return "Cyber Genie bot is running!", 200
+@app.route("/health", methods=["GET"])
+def health():
+    return "OK", 200
     
 # ✅ Use this for Railway production
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+
 
 
