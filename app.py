@@ -2,20 +2,39 @@ from flask import Flask, request, jsonify
 import requests
 import openai
 import os
+import sys
 import warnings
 
 warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
 
-# BestCRM API credentials from environment variables
+# ----------------------------
+# Environment variables
+# ----------------------------
 BESTCRM_API_URL = "https://app.bestcrmapp.in/api/v2/whatsapp-business/messages"
 ACCESS_TOKEN = os.environ.get("BESTCRM_ACCESS_TOKEN")
 PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
-# OpenAI API key from environment
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+# Check required environment variables
+missing_vars = []
+if not ACCESS_TOKEN:
+    missing_vars.append("BESTCRM_ACCESS_TOKEN")
+if not PHONE_NUMBER_ID:
+    missing_vars.append("PHONE_NUMBER_ID")
+if not OPENAI_API_KEY:
+    missing_vars.append("OPENAI_API_KEY")
 
+if missing_vars:
+    print(f"[ERROR] Missing environment variables: {', '.join(missing_vars)}")
+    sys.exit(1)
+
+openai.api_key = OPENAI_API_KEY
+
+# ----------------------------
+# Functions
+# ----------------------------
 def send_whatsapp_message(to_number, message):
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -29,11 +48,10 @@ def send_whatsapp_message(to_number, message):
     }
     try:
         response = requests.post(BESTCRM_API_URL, headers=headers, json=payload, verify=False)
-        print("BestCRM API status:", response.status_code)
-        print("BestCRM API response:", response.text)
+        print(f"[WhatsApp] Status: {response.status_code} | Response: {response.text}")
         return response.json()
     except requests.exceptions.RequestException as e:
-        print("BestCRM Request Error:", e)
+        print(f"[WhatsApp] Request Error: {e}")
 
 def get_openai_response(prompt_text):
     try:
@@ -43,13 +61,16 @@ def get_openai_response(prompt_text):
         )
         return completion.choices[0].message.content
     except Exception as e:
-        print("OpenAI Error:", e)
+        print(f"[OpenAI] Error: {e}")
         return "Sorry, I couldn't process your request right now."
 
+# ----------------------------
+# Routes
+# ----------------------------
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()
-    print("Received:", data)
+    print(f"[Webhook] Received: {data}")
 
     try:
         phone_number = data['data']['senderPhoneNumber']
@@ -63,18 +84,17 @@ def webhook():
 
         send_whatsapp_message(phone_number, reply)
     except Exception as e:
-        print("Webhook Error:", e)
+        print(f"[Webhook] Error: {e}")
 
     return jsonify(status="success"), 200
-    
+
 @app.route("/health", methods=["GET"])
 def health():
     return "OK", 200
-    
-# ✅ Use this for Railway production
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
 
-
-
+# ----------------------------
+# Production: Gunicorn will handle the app
+# ----------------------------
+# if __name__ == "__main__":
+#     port = int(os.environ.get("PORT", 8080))
+#     app.run(host="0.0.0.0", port=port)
